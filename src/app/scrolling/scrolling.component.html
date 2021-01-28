@@ -1,0 +1,15 @@
+<div #main class="scrollable main" (scroll)="scroll('main')">
+  <ul>
+    <li *ngFor="let r of range">
+      <span>[{{ r + 1 }}]</span> Main Line Main Line
+    </li>
+  </ul>
+</div>
+
+<div #side class="scrollable side" (scroll)="scroll('side')">
+  <ul>
+    <li *ngFor="let r of range">
+      <span>[{{ r + 1 }}]</span> Side Line
+    </li>
+  </ul>
+</div>

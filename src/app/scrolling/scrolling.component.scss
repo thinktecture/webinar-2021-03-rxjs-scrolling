@@ -1,0 +1,42 @@
+:host {
+  display: flex;
+  font-family: sans-serif;
+}
+
+.scrollable {
+  height: 500px;
+  overflow: scroll;
+  border: 2px solid gray;
+  margin: 1rem;
+
+  &.main {
+    width: 20rem;
+  }
+
+  &.side {
+    width: 10rem;
+  }
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+
+  li {
+    &:nth-of-type(even) {
+      background-color: lightgrey;
+    }
+
+    height: 1.5rem;
+    line-height: 1.5rem;
+    margin: 0;
+    padding: 0 0.5rem;
+
+    span {
+      display: inline-block;
+      width: 2.5rem;
+      text-align: center;
+    }
+  }
+}
