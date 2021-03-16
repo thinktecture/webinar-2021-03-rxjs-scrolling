@@ -3,8 +3,11 @@ import {
   Component,
   ElementRef,
   OnDestroy,
+  OnInit,
   ViewChild,
 } from '@angular/core';
+import { partition, race, Subject, Subscription } from 'rxjs';
+import { debounceTime, repeat, take, tap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-scrolling',
@@ -12,7 +15,7 @@ import {
   styleUrls: ['./scrolling.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ScrollingComponent implements OnDestroy {
+export class ScrollingComponent implements OnInit, OnDestroy {
   readonly range = new Array(1000).fill(0).map((_, i) => i);
 
   @ViewChild('main', { read: ElementRef, static: true })
@@ -21,35 +24,28 @@ export class ScrollingComponent implements OnDestroy {
   @ViewChild('side', { read: ElementRef, static: true })
   readonly side?: ElementRef;
 
-  // State variables
-  private first?: 'main' | 'side';
-  private timeout?: any;
+  private scroll$ = new Subject<'main' | 'side'>();
+  private scrollSub = Subscription.EMPTY;
+
+  ngOnInit(): void {
+    const [mainScroll$, sideScroll$] = partition(this.scroll$, source => source === 'main');
+
+    this.scrollSub = race([mainScroll$, sideScroll$])
+      .pipe(
+        tap(source => this.applyScroll(source)),
+        debounceTime(100),
+        take(1),
+        repeat(),
+      )
+      .subscribe();
+  }
 
   scroll(source: 'main' | 'side'): void {
-    // remember which container scrolled first
-    if (!this.first) {
-      this.first = source;
-    }
-
-    // guard this function while the other container is scrolled
-    if (this.first !== source) {
-      return;
-    }
-
-    // adjust the scroll position
-    this.applyScroll(source);
-
-    // reset the timeout
-    if (this.timeout) {
-      clearTimeout(this.timeout);
-    }
-    this.timeout = setTimeout(() => (this.first = undefined), 200);
+    this.scroll$.next(source);
   }
 
   ngOnDestroy(): void {
-    if (this.timeout) {
-      clearTimeout(this.timeout);
-    }
+    this.scrollSub.unsubscribe();
   }
 
   private applyScroll(source: 'main' | 'side'): void {
