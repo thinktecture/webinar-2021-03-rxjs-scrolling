@@ -6,8 +6,12 @@ import {
   OnInit,
   ViewChild,
 } from '@angular/core';
-import { partition, race, Subject, Subscription } from 'rxjs';
+import { MonoTypeOperatorFunction, partition, race, Subject, Subscription } from 'rxjs';
 import { debounceTime, repeat, take, tap } from 'rxjs/operators';
+
+function repeatAfter<T>(delayMs: number): MonoTypeOperatorFunction<T> {
+  return source$ => source$.pipe(debounceTime(delayMs), take(1), repeat());
+}
 
 @Component({
   selector: 'app-scrolling',
@@ -33,9 +37,7 @@ export class ScrollingComponent implements OnInit, OnDestroy {
     this.scrollSub = race([mainScroll$, sideScroll$])
       .pipe(
         tap(source => this.applyScroll(source)),
-        debounceTime(100),
-        take(1),
-        repeat(),
+        repeatAfter(100),
       )
       .subscribe();
   }
